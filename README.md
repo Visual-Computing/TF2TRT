@@ -43,6 +43,18 @@ serialized_engine = importer.optimize_network(network, max_workspace_size=4 * (1
 
 The [example](https://github.com/Visual-Computing/TF2TRT/blob/master/TF%20to%20TRT%20converter%20example.ipynb) also explains how to froze a Tensorflow graph and run a TensorRT engine.
 
+### How to use FP16?
+The TensorRT network can be optimized for FP16 computation by adding a ```fp16_mode=True``` parameter to the ```optimize_network(...)``` method. Please note it is important to still provide a normal FP32 graph and do not have any manual FP16 casting operation in it. 
+
+### Optimize for bigger batch sizes
+An additional parameter ```max_batch_size=32``` of the ```optimize_network(...)``` method will define the maximal batch size the resulting engine will be able to execute. Optimizing for higher batch sizes might reduce the performance of smaller ones. If you need perfect performance for several batch sizes, you need to create execution profiles for each one of them.
+
+### Quality vs speed up the optimization process
+Since the optimization process is an exaustic search of implementations to run a particular layer in the least amount of time. We can specify how often each implementation should be repreated (```min_find_iterations```, ```average_find_iterations```) in order to get an average computation time. Our API provides a simplified parameter for that ```importer.optimize_network(..., fast_pass=True)``` which sets both iteration parameter to 1 if Fast Pass is True and otherwise to 5.
+
+### Expected memory consumption?
+The resulting serialized engine contains the weights and structure of the network. When executing an inference pass all the weights will be copied into the memory of the GPU plus some additional space for intermediate calculations. The ```serialized_engine.device_memory_size``` variables gives an approximation of how many memory will be consumed. 
+
 # Contribution
 We love to get in contact with the community. Feel free to [e-mail](mailto:info@visual-computing.com) us or use the [issue system](https://github.com/Visual-Computing/TF2TRT/issues) to suggest new features and ask questions. Pull requests are always welcome, we try to incorporate them into the master branch as fast as possible. Not sure if that typo is worth a pull request? Do it! We will appreciate it.
 
