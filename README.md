@@ -11,7 +11,7 @@ This converter parses a [Tensorflow](https://www.tensorflow.org/) protobuf file 
 
 
 # Limitations
-There is **no support for dynamic shapes**. Computations based on shapes of tensors inside the network at runtime are therefore not possible. Very shape musst be fully specified at construction time in Tensorflow. 
+There is **no support for dynamic shapes**. Computations based on shapes of tensors inside the network at runtime are therefore not possible. Every shape musst be fully specified at construction time in Tensorflow. 
 
 Tensorflow has a lot of custom made operations and not all of them are supported in TensorRT. Right now the converter is **missing a lot of operations and attributes**. Adding them is quite easy if they are supported by TensorRT. 
 
