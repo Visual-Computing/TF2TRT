@@ -49,10 +49,18 @@ class MemoryBinding(object):
         :param data: np.ndarray
         """
 
-        if data.shape == self.shape:
+        if data.shape[1:] != self.shape[1:]:
+            raise Exception("Shape of array " + str(data.shape[1:]) + " is not equal to the shape of input " + self.name + " " + str(self.shape[1:]))
+
+        if data.shape[0] > self.shape[0]:
+            raise Exception("Batch size of of data array " + str(data.shape[1]) + " is higher than max batch size of input " + self.name + " " + str(self.shape[1]))
+
+        # copy all or only parts of it
+        if data.shape[0] == self.shape[0]:
             np.copyto(self.host, data.ravel())
         else:
-            raise Exception("Shape of array("+str(data.shape)+") is not equal to the shape of input("+str(data.shape)+")")
+            data_ravel = data.ravel()
+            self.host[:data_ravel.shape[0]] = data_ravel
 
 
 class TRTInference(object):
@@ -94,6 +102,7 @@ class TRTInference(object):
         # pop the context from the top of the context stack
         cuda_context.pop()
 
+        print("Max batch size", self._trt_engine.max_batch_size)
         print("All shapes are known", self._context.all_shape_inputs_specified)
         print("All dynamic shapes are known", self._context.all_binding_shapes_specified)
 
@@ -131,8 +140,9 @@ class TRTInference(object):
         for binding in engine:
             name = binding
             shape = engine.get_binding_shape(binding)
+            shape[0] = engine.max_batch_size
             dtype = trt.nptype(engine.get_binding_dtype(binding))
-            size = trt.volume(shape) * engine.max_batch_size
+            size = trt.volume(shape)
 
             # Allocate host and device buffers
             # https://documen.tician.de/pycuda/util.html
@@ -145,6 +155,12 @@ class TRTInference(object):
             else:
                 self._outputs.append(MemoryBinding(name, shape, dtype, host_mem, device_mem, False))
 
+    def get_max_batch_size(self):
+        """
+        The max batch sizes this engine was optimized for.
+        """
+        return self._trt_engine.max_batch_size
+
     def get_input_bindings(self):
         return self._inputs
 
@@ -153,6 +169,8 @@ class TRTInference(object):
 
     def run(self, feed_dict, batch_size=1):
         """
+        The inference computes and returns only the amount of data defined by the batch size parameter.
+        Smaller batch sizes perform faster. There is a limit imposed by the TRT engine, see get_max_batch_size().
 
         :param feed_dict: dict<string, np.ndarray>
         :param batch_size:
@@ -185,6 +203,8 @@ class TRTInference(object):
             # Copy to numpy
             output = np.copy(mem.host)
             output = output.reshape(mem.shape)
+            if batch_size < output.shape[0]:
+                output = output[:batch_size]
             output_dict[mem.name] = output
 
         cuda_context.pop()
