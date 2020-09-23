@@ -23,7 +23,7 @@ The layout of the input data into the Tensorflow network should be **channel-fir
 * [TensorRT 6.0](https://developer.nvidia.com/tensorrt)
 * [Tensorflow 1.14](https://www.tensorflow.org/)
 
-It is recommended to install [TensorRT](https://developer.nvidia.com/tensorrt) via [Anaconda](https://www.anaconda.com/) and the [IBM repositories](https://www.ibm.com/support/knowledgecenter/SS5SF7_1.6.2/navigation/wmlce_install.html). The newest pycuda version can be installed with [pypi](https://pypi.org/project/pycuda/)
+It is recommended to install [TensorRT](https://developer.nvidia.com/tensorrt) via [Anaconda](https://www.anaconda.com/) and the [IBM repositories](https://www.ibm.com/support/knowledgecenter/SS5SF7_1.6.2/navigation/wmlce_install.html). The newest pycuda version can be installed with [pypi](https://pypi.org/project/pycuda/) or [IBMs channel](https://anaconda.org/powerai/pycuda) in Anaconda.
 
 # Why use TF2TRT?
 * Easy to extend
